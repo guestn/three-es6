@@ -23,9 +23,8 @@ import DatGUI from './managers/datGUI';
 // data
 import Config from './../config';
 // -- End of imports
-
 // Local vars for rStats
-let rS, bS, glS, tS;
+// let rS, bS, glS, tS;
 
 
 // This class instantiates and ties all of the components together, starts the loading process and renders the main loop
@@ -33,6 +32,7 @@ export default class Main {
   constructor(container) {
     // Set container property to container element
     this.container = container;
+    container.style.height =  100;
 
     // Start Three clock
     this.clock = new THREE.Clock();
@@ -42,7 +42,7 @@ export default class Main {
     this.scene.fog = new THREE.FogExp2(Config.fog.color, Config.fog.near);
 
     // Get Device Pixel Ratio first for retina
-    if(window.devicePixelRatio) {
+    if (window.devicePixelRatio) {
       Config.dpr = window.devicePixelRatio;
     }
 
@@ -56,16 +56,16 @@ export default class Main {
 
     // Create and place lights in scene
     const lights = ['ambient', 'directional', 'point', 'hemi'];
-    for(let i = 0; i < lights.length; i++) {
+    for (let i = 0; i < lights.length; i++) {
       this.light.place(lights[i]);
     }
 
     // Create and place geo in scene
     this.geometry = new Geometry(this.scene);
     this.geometry.make('plane')(150, 150, 10, 10);
-    this.geometry.place([0, -20, 0], [Math.PI/2, 0, 0]);
+    this.geometry.place([0, -20, 0], [Math.PI / 2, 0, 0]);
 
-    // Set up rStats if dev environment
+    //Set up rStats if dev environment
     // if(Config.isDev) {
     //   bS = new BrowserStats();
     //   glS = new glStats();
@@ -115,7 +115,7 @@ export default class Main {
         new Interaction(this.renderer.threeRenderer, this.scene, this.camera.threeCamera, this.controls.threeControls);
 
         // Add dat.GUI controls if dev
-        if(Config.isDev) {
+        if (Config.isDev) {
           new DatGUI(this, this.model.obj);
         }
 
@@ -126,33 +126,33 @@ export default class Main {
     });
 
     // Start render which does not wait for model fully loaded
-    this.render();
+    this.animate();
   }
 
-  render() {
+  animate() {
     // Render rStats if Dev
-    if(Config.isDev) {
-      rS('frame').start();
-      glS.start();
+    if (Config.isDev) {
+      //rS('frame').start();
+      //glS.start();
 
-      rS('rAF').tick();
-      rS('FPS').frame();
+      // rS('rAF').tick();
+      // rS('FPS').frame();
 
-      rS('render').start();
+      // rS('render').start();
     }
 
     // Call render function and pass in created scene and camera
     this.renderer.render(this.scene, this.camera.threeCamera);
 
     // rStats has finished determining render call now
-    if(Config.isDev) {
-      rS('render').end(); // render finished
-      rS('frame').end(); // frame finished
+    if (Config.isDev) {
+      // rS('render').end(); // render finished
+      // rS('frame').end(); // frame finished
 
-      // Local rStats update
-      rS('rStats').start();
-      rS().update();
-      rS('rStats').end();
+      // // Local rStats update
+      // rS('rStats').start();
+      // rS().update();
+      // rS('rStats').end();
     }
 
     // Delta time is sometimes needed for certain updates
@@ -163,6 +163,6 @@ export default class Main {
     this.controls.threeControls.update();
 
     // RAF
-    requestAnimationFrame(this.render.bind(this)); // Bind the main class instead of window object
+    requestAnimationFrame(this.animate.bind(this)); // Bind the main class instead of window object
   }
 }

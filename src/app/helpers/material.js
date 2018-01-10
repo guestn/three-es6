@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import Config from '../../config';
+// import Config from '../../config';
 
 // USe this class as a helper to set up some default materials
 export default class Material {

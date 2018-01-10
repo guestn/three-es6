@@ -48,7 +48,7 @@ export default class Keyboard {
     for(let i = 0; i < keys.length; i++) {
       const key = keys[i];
       let pressed = false;
-      if(Object.keys(ALIAS).indexOf(key) != -1) {
+      if(Object.keys(ALIAS).indexOf(key) !== -1) {
         pressed = this.keyCodes[ALIAS[key]];
       } else {
         pressed = this.keyCodes[key.toUpperCase().charCodeAt(0)];

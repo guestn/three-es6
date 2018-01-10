@@ -7,7 +7,7 @@ export default class Helpers {
     return function() {
       const context = scope || this;
 
-      const now  = +new Date,
+      const now  = new Date(),
           args = arguments;
 
       if(last && now < last + threshhold) {

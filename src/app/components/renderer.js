@@ -10,7 +10,7 @@ export default class Renderer {
     this.container = container;
 
     // Create WebGL renderer and set its antialias
-    this.threeRenderer = new THREE.WebGLRenderer({antialias: true});
+    this.threeRenderer = new THREE.WebGLRenderer(Config.renderer);
 
     // Set clear color to fog to enable fog or to hex color for no fog
     this.threeRenderer.setClearColor(scene.fog.color);
@@ -35,7 +35,15 @@ export default class Renderer {
   }
 
   updateSize() {
-    this.threeRenderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+    //this.threeRenderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+    this.threeRenderer.setSize(Config.container.width, Config.container.height);
+    //this.threeCamera.aspect = Config.container.width * Config.dpr / Config.container.height * Config.dpr;
+   // camera.aspect = window.innerWidth / window.innerHeight;
+
+    // Always call updateProjectionMatrix on camera change
+   // camera.updateProjectionMatrix();
+  
+
   }
 
   render(scene, camera) {

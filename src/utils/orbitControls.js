@@ -10,7 +10,7 @@ module.exports = function(THREE) {
    * @author WestLangley / http://github.com/WestLangley
    * @author erich666 / http://erichaines.com
    */
-  /*global THREE, console */
+  // /* global THREE, console */
 
   function OrbitConstraint ( object ) {
 
@@ -630,6 +630,8 @@ module.exports = function(THREE) {
         case scope.keys.RIGHT:
           pan( - scope.keyPanSpeed, 0 );
           scope.update();
+          break;
+        default:
           break;
 
       }

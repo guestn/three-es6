@@ -65,6 +65,8 @@ export default class Light {
       case 'hemi':
         this.scene.add(this.hemiLight);
         break;
+      default:
+        break;
     }
   }
 }

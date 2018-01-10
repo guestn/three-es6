@@ -12,6 +12,14 @@ export default {
   dpr: 1,
   easing: TWEEN.Easing.Quadratic.InOut,
   duration: 500,
+  renderer: {
+    antialias: true,
+    alpha: true,
+  },
+  container: {
+    width: window.innerWidth,
+    height: window.innerHeight
+  },
   model: {
     path: './assets/models/Teapot.json',
     scale: 20
@@ -36,7 +44,7 @@ export default {
     near: 0.0008
   },
   camera: {
-    fov: 40,
+    fov: 45,
     near: 2,
     far: 1000,
     aspect: 1,
