@@ -35,15 +35,7 @@ export default class Renderer {
   }
 
   updateSize() {
-    //this.threeRenderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
     this.threeRenderer.setSize(Config.container.width, Config.container.height);
-    //this.threeCamera.aspect = Config.container.width * Config.dpr / Config.container.height * Config.dpr;
-   // camera.aspect = window.innerWidth / window.innerHeight;
-
-    // Always call updateProjectionMatrix on camera change
-   // camera.updateProjectionMatrix();
-  
-
   }
 
   render(scene, camera) {

@@ -32,7 +32,6 @@ export default class Main {
   constructor(container) {
     // Set container property to container element
     this.container = container;
-    container.style.height =  100;
 
     // Start Three clock
     this.clock = new THREE.Clock();
@@ -50,7 +49,7 @@ export default class Main {
     this.renderer = new Renderer(this.scene, container);
 
     // Components instantiation
-    this.camera = new Camera(this.renderer.threeRenderer);
+    this.camera = new Camera(this.renderer.threeRenderer, container);
     this.controls = new Controls(this.camera.threeCamera, container);
     this.light = new Light(this.scene);
 
@@ -119,15 +118,22 @@ export default class Main {
           new DatGUI(this, this.model.obj);
         }
 
+        console.log('loaded')
+
         // Everything is now fully loaded
         Config.isLoaded = true;
-        this.container.querySelector('#loading').style.display = 'none';
       };
-    });
+    });  
+    document.addEventListener('DOMContentLoaded', () => {
+      this.container.querySelector('#loader').style.display = 'none';
+      this.animate();
+    }, false);
+
 
     // Start render which does not wait for model fully loaded
-    this.animate();
+    //this.animate();
   }
+
 
   animate() {
     // Render rStats if Dev
