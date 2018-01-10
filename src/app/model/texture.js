@@ -26,6 +26,7 @@ export default class Texture {
     imageFiles.forEach(imageFile => {
       // Add an individual Promise for each image in array
       promiseArray.push(new Promise((resolve, reject) => {
+
         // Each Promise will attempt to load the image file
         loader.load(imageFile.image,
           // This gets called on load with the loaded texture
@@ -34,6 +35,7 @@ export default class Texture {
 
             // Resolve Promise with object of texture if it is instance of THREE.Texture
             const modelOBJ = {};
+                      
             modelOBJ[imageFile.name] = texture;
             if(modelOBJ[imageFile.name] instanceof THREE.Texture)
               resolve(modelOBJ);

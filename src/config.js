@@ -21,13 +21,13 @@ export default {
     height: window.innerHeight
   },
   model: {
-    path: './assets/models/Teapot.json',
+    path: './assets/models/teapot.json',
     scale: 20
   },
   texture: {
     path: './assets/textures/',
     imageFiles: [
-      {name: 'UV', image: 'UV_Grid_Sm.jpg'}
+      {name: 'UV', image: 'UV_Grid_Sm.png'}
     ]
   },
   mesh: {
