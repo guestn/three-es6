@@ -1,6 +1,23 @@
 .App {
 }
 
+#loader {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  z-index: 10;
+  transition: opacity 0.5s ease;
+
+  display:none;
+}
+
+#loader.loaded {
+  opacity: 0;
+}
+
 #appContainer {
   border: 1px dotted black;
 }

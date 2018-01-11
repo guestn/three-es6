@@ -21,14 +21,22 @@ export default {
     height: window.innerHeight
   },
   model: {
-    path: './assets/models/teapot.json',
+    path: './assets/models/teapot-claraio.json',
     scale: 20
   },
-  texture: {
-    path: './assets/textures/',
-    imageFiles: [
-      {name: 'UV', image: 'UV_Grid_Sm.png'}
-    ]
+  textures: {
+    'UV': {
+      path: './assets/textures/',
+      imageFiles: [
+        {name: 'UV', image: 'UV_Grid_Sm.png'}
+      ]
+    },
+    'Noise': {
+      path: './assets/textures/',
+      imageFiles: [
+        {name: 'UV', image: 'seamless-perlin-noise.jpg'}
+      ]
+    },
   },
   mesh: {
     enableHelper: false,

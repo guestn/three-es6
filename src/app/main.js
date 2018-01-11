@@ -13,6 +13,7 @@ import Controls from './components/controls';
 import Geometry from './helpers/geometry';
 
 // Model
+import ModelWithTextures from './model/modelWithTextures';
 import Texture from './model/texture';
 import Model from './model/model';
 
@@ -64,6 +65,10 @@ export default class Main {
     this.geometry.make('plane')(150, 150, 10, 10);
     this.geometry.place([0, -20, 0], [Math.PI / 2, 0, 0]);
 
+    this.geometry = new Geometry(this.scene);
+    this.geometry.make('sphere')(20, 20, 10, 10);
+    this.geometry.place([0, 0, 40], [Math.PI / 2, 0, 0]);
+
     //Set up rStats if dev environment
     // if(Config.isDev) {
     //   bS = new BrowserStats();
@@ -92,40 +97,14 @@ export default class Main {
     //   });
     // }
 
-    // Instantiate texture class
-    this.texture = new Texture();
+    this.modelWithTextures = new ModelWithTextures({ 
+      scene: this.scene, 
+      manager: this.manager, 
+      textures: new Texture('Noise').textures, 
+      textureName:'Noise'
+    }).load();
 
-    // Start loading the textures and then go on to load the model after the texture Promises have resolved
-    this.texture.load().then(() => {
-      this.manager = new THREE.LoadingManager();
-
-      // Textures loaded, load model
-      this.model = new Model(this.scene, this.manager, this.texture.textures);
-      this.model.load();
-
-      // onProgress callback
-      this.manager.onProgress = (item, loaded, total) => {
-        console.log(`${item}: ${loaded} ${total}`);
-      };
-
-      // All loaders done now
-      this.manager.onLoad = () => {
-        // Set up interaction manager with the app now that the model is finished loading
-        new Interaction(this.renderer.threeRenderer, this.scene, this.camera.threeCamera, this.controls.threeControls);
-
-        // Add dat.GUI controls if dev
-        if (Config.isDev) {
-          new DatGUI(this, this.model.obj);
-        }
-
-        console.log('loaded')
-
-        // Everything is now fully loaded
-        Config.isLoaded = true;
-      };
-    });  
     document.addEventListener('DOMContentLoaded', () => {
-      this.container.querySelector('#loader').style.display = 'none';
       this.animate();
     }, false);
 
