@@ -97,11 +97,12 @@ export default class Main {
     //   });
     // }
 
-    this.modelWithTextures = new ModelWithTextures({ 
+    this.teapot = new ModelWithTextures({ 
       scene: this.scene, 
       manager: this.manager, 
-      textures: new Texture('Noise').textures, 
-      textureName:'Noise'
+      textureName:'UV',
+      modelName: 'teapot',
+      rotation: [0,Math.PI/2, 0]
     }).load();
 
     document.addEventListener('DOMContentLoaded', () => {

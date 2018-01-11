@@ -24,7 +24,14 @@ export default class ModelWithTextures {
         this.manager = new THREE.LoadingManager();
 
         // Textures loaded, load model
-        this.model = new Model(this.modelParams.scene, this.modelParams.manager, this.texture.textures);
+        this.model = new Model(
+            this.modelParams.scene, 
+            this.modelParams.manager, 
+            this.texture.textures, 
+            this.modelParams.modelName,
+            this.modelParams.position,
+            this.modelParams.rotation
+        );
         this.model.load();
 
         // onProgress callback

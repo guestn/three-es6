@@ -1,5 +1,5 @@
 import Keyboard from '../../utils/keyboard';
-import Helpers from '../../utils/helpers';
+import { throttle } from '../../utils/helpers';
 import Config from '../../config';
 
 // Manages all input interactions
@@ -18,7 +18,7 @@ export default class Interaction {
 
     // Listeners
     // Mouse events
-    this.renderer.domElement.addEventListener('mousemove', (event) => Helpers.throttle(this.onMouseMove(event), 250), false);
+    this.renderer.domElement.addEventListener('mousemove', (event) => throttle(this.onMouseMove(event), 250), false);
     this.renderer.domElement.addEventListener('mouseleave', (event) => this.onMouseLeave(event), false);
     this.renderer.domElement.addEventListener('mouseover', (event) => this.onMouseOver(event), false);
 

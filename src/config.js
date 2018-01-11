@@ -20,9 +20,11 @@ export default {
     width: window.innerWidth,
     height: window.innerHeight
   },
-  model: {
-    path: './assets/models/teapot-claraio.json',
-    scale: 20
+  models: {
+    'teapot': {
+      path: './assets/models/teapot-claraio.json',
+      scale: 20
+    }
   },
   textures: {
     'UV': {

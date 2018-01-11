@@ -2,7 +2,7 @@ import * as THREE from 'three';
 // Promise polyfill for IE
 //import { Promise } from 'es6-promise';
 
-import Helpers from '../../utils/helpers';
+import { logProgress, logError } from '../../utils/helpers';
 import Config from '../../config';
 
 // This class preloads all textures in the imageFiles array in the Config via ES6 Promises.
@@ -40,7 +40,7 @@ export default class Texture {
             if(modelOBJ[imageFile.name] instanceof THREE.Texture)
               resolve(modelOBJ);
           },
-          Helpers.logProgress(),
+          logProgress(),
           xhr => reject(new Error(xhr + 'An error occurred loading while loading ' + imageFile.image))
         )
       }));
