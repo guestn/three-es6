@@ -8,7 +8,6 @@ import './App.css';
 // Check environment and set the Config helper
 if(process.env.NODE_ENV === 'development') {
   console.log('----- RUNNING IN DEV ENVIRONMENT! -----');
-
   Config.isDev = true;
 }
 

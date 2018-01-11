@@ -40,7 +40,7 @@ export default class Texture {
             if(modelOBJ[imageFile.name] instanceof THREE.Texture)
               resolve(modelOBJ);
           },
-          logProgress(),
+          logProgress(imageFile.image),
           xhr => reject(new Error(xhr + 'An error occurred loading while loading ' + imageFile.image))
         )
       }));

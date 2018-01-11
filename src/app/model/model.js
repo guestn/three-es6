@@ -52,6 +52,6 @@ export default class Model {
 
       //, [Math.PI / 2, 0, 0])
       this.scene.add(obj);
-    }, logProgress(), logError());
+    }, logProgress(this.model), logError(this.model));
   }
 }

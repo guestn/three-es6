@@ -24,19 +24,19 @@ export const throttle = (fn, threshhold, scope) => {
   };
 }
 
-export const logProgress = () => {
+export const logProgress = (name = '') => {
   return function(xhr) {
     if(xhr.lengthComputable) {
       const percentComplete = xhr.loaded / xhr.total * 100;
 
-      console.log(`${Math.round(percentComplete, 2)}% downloaded`);
+      console.log(`${name} ${Math.round(percentComplete, 2)}% downloaded`);
     }
   }
 }
 
-export const logError = () => {
+export const logError = (name = '') => {
   return function(xhr) {
-    console.error(xhr);
+    console.error(`${name}: ${xhr}`);
   }
 }
 
