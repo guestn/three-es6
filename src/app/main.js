@@ -23,9 +23,12 @@ import DatGUI from './managers/datGUI';
 
 // data
 import Config from './../config';
+
+// stats
+import rStats from '@jpweeks/rstats';
 // -- End of imports
 // Local vars for rStats
-// let rS, bS, glS, tS;
+let rS, bS, glS, tS;
 
 
 // This class instantiates and ties all of the components together, starts the loading process and renders the main loop
@@ -70,32 +73,32 @@ export default class Main {
     this.geometry.place([0, 0, 40], [Math.PI / 2, 0, 0]);
 
     //Set up rStats if dev environment
-    // if(Config.isDev) {
+    if(Config.isDev) {
     //   bS = new BrowserStats();
     //   glS = new glStats();
-    //   tS = new threeStats(this.renderer.threeRenderer);
+    //  tS = new threeStats(this.renderer.threeRenderer);
     //
-    //   rS = new rStats({
-    //     CSSPath: './assets/css/',
-    //     userTimingAPI: true,
-    //     values: {
-    //       frame: { caption: 'Total frame time (ms)', over: 16, average: true, avgMs: 100 },
-    //       fps: { caption: 'Framerate (FPS)', below: 30 },
-    //       calls: { caption: 'Calls (three.js)', over: 3000 },
-    //       raf: { caption: 'Time since last rAF (ms)', average: true, avgMs: 100 },
-    //       rstats: { caption: 'rStats update (ms)', average: true, avgMs: 100 },
-    //       texture: { caption: 'GenTex', average: true, avgMs: 100 }
-    //     },
-    //     groups: [
-    //       { caption: 'Framerate', values: [ 'fps', 'raf' ] },
-    //       { caption: 'Frame Budget', values: [ 'frame', 'texture', 'setup', 'render' ] }
-    //     ],
-    //     fractions: [
-    //       { base: 'frame', steps: [ 'texture', 'setup', 'render' ] }
-    //     ],
-    //     plugins: [bS, tS, glS]
-    //   });
-    // }
+      rS = new rStats({
+        CSSPath: './assets/css/',
+        userTimingAPI: true,
+        values: {
+          frame: { caption: 'Total frame time (ms)', over: 16, average: true, avgMs: 100 },
+          fps: { caption: 'Framerate (FPS)', below: 30 },
+          calls: { caption: 'Calls (three.js)', over: 3000 },
+          raf: { caption: 'Time since last rAF (ms)', average: true, avgMs: 100 },
+          rstats: { caption: 'rStats update (ms)', average: true, avgMs: 100 },
+          texture: { caption: 'GenTex', average: true, avgMs: 100 }
+        },
+        groups: [
+          { caption: 'Framerate', values: [ 'fps', 'raf' ] },
+          { caption: 'Frame Budget', values: [ 'frame', 'texture', 'setup', 'render' ] }
+        ],
+        fractions: [
+          { base: 'frame', steps: [ 'texture', 'setup', 'render' ] }
+        ],
+        //plugins: [bS, tS, glS]
+      });
+    }
 
     this.teapot = new ModelWithTextures({ 
       scene: this.scene, 
@@ -118,13 +121,13 @@ export default class Main {
   animate() {
     // Render rStats if Dev
     if (Config.isDev) {
-      //rS('frame').start();
+      rS('frame').start();
       //glS.start();
 
-      // rS('rAF').tick();
-      // rS('FPS').frame();
+      rS('rAF').tick();
+      rS('FPS').frame();
 
-      // rS('render').start();
+      rS('render').start();
     }
 
     // Call render function and pass in created scene and camera
@@ -132,17 +135,17 @@ export default class Main {
 
     // rStats has finished determining render call now
     if (Config.isDev) {
-      // rS('render').end(); // render finished
-      // rS('frame').end(); // frame finished
+      rS('render').end(); // render finished
+      rS('frame').end(); // frame finished
 
       // // Local rStats update
-      // rS('rStats').start();
-      // rS().update();
-      // rS('rStats').end();
+      rS('rStats').start();
+      rS().update();
+      rS('rStats').end();
     }
 
     // Delta time is sometimes needed for certain updates
-    //const delta = this.clock.getDelta();
+    const delta = this.clock.getDelta();
 
     // Call any vendor or module updates here
     TWEEN.update();
