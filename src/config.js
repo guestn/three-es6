@@ -22,13 +22,13 @@ export default {
   },
   models: {
     'teapot': {
-      path: './assets/models/teapot-claraio.json',
+      path: './../assets/models/teapot-claraio.json',
       scale: 20
     }
   },
   textures: {
     'UV': {
-      path: './assets/textures/',
+      path: process.env.PUBLIC_URL+'/assets/textures/',
       imageFiles: [
         {name: 'UV', image: 'UV_Grid_Sm.png'}
       ]
@@ -51,16 +51,16 @@ export default {
   },
   fog: {
     color: 0xffffff,
-    near: 0.0008
+    near: 0.000008
   },
   camera: {
     fov: 45,
     near: 2,
-    far: 1000,
+    far: 2000,
     aspect: 1,
     posX: 0,
-    posY: 30,
-    posZ: 40
+    posY: 1000,
+    posZ: 1000
   },
   controls: {
     autoRotate: false,
@@ -68,7 +68,7 @@ export default {
     rotateSpeed: 0.5,
     zoomSpeed: 0.8,
     minDistance: 200,
-    maxDistance: 600,
+    maxDistance: 1200,
     minPolarAngle: Math.PI / 5,
     maxPolarAngle: Math.PI / 2,
     minAzimuthAngle: -Infinity,

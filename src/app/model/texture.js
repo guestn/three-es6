@@ -22,7 +22,7 @@ export default class Texture {
     const imageFiles = Config.textures[this.textureName].imageFiles;
     const promiseArray = [];
 
-    loader.setPath(Config.textures[this.textureName].path);
+    loader.setPath(process.env.PUBLIC_URL + Config.textures[this.textureName].path);
 
     imageFiles.forEach(imageFile => {
       // Add an individual Promise for each image in array
@@ -41,7 +41,9 @@ export default class Texture {
               resolve(modelOBJ);
           },
           logProgress(imageFile.image),
-          xhr => reject(new Error(xhr + 'An error occurred loading while loading ' + imageFile.image))
+         // xhr => reject(new Error(xhr,'An error occurred loading while loading ' + imageFile.image))
+          xhr => console.log(xhr,'An error occurred loading while loading ' + imageFile.image)
+
         )
       }));
     });
