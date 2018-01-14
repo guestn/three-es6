@@ -12,6 +12,7 @@ export default class Camera {
     this.threeCamera = new THREE.PerspectiveCamera(Config.camera.fov, window.innerWidth / window.innerHeight, Config.camera.near, Config.camera.far);
     this.threeCamera.position.set(Config.camera.posX, Config.camera.posY, Config.camera.posZ);
 
+   // this.threeCamera.lookAt(-4000,-100,0)
     // Initial sizing
     this.updateSize();
 

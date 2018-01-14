@@ -56,6 +56,7 @@ export default class Main {
 
     // Main renderer instantiation
     this.renderer = new Renderer(this.scene, container);
+  
 
     // Components instantiation
     this.camera = new Camera(this.renderer.threeRenderer, container);
@@ -115,12 +116,15 @@ export default class Main {
      
 
     document.addEventListener('DOMContentLoaded', () => {
+      this.initOimoPhysics();
+
       this.animate();
 
         // physics
 
-      this.initOimoPhysics();
     }, false);
+
+    console.log(this.camera.threeCamera)
 
 
     // Start render which does not wait for model fully loaded
@@ -167,7 +171,14 @@ export default class Main {
     // RAF
     requestAnimationFrame(this.animate.bind(this)); // Bind the main class instead of window object
 
-    this.updateOimoPhysics
+    this.updateOimoPhysics;
+
+
+    //console.log(this.meshs[0].position.x)
+    this.camera.threeCamera.position.set(this.meshs[0].position.x +50,this.meshs[0].position.y+10,this.meshs[0].position.z)
+    this.camera.threeCamera.lookAt(this.meshs[0].position.x,this.meshs[0].position.y,this.meshs[0].position.z)
+
+    //console.log(this.camera.threeCamera.position)
   }
 
     //----------------------------------
@@ -292,6 +303,8 @@ export default class Main {
     const ground2 = this.world.add({size:[800, 80, 400], pos:[0,-40,0], rot:[0,0,10],world:this.world});
     const groundGeo = new THREE.PlaneBufferGeometry( 400, 400,  1,1 );
     this.addStaticBox([800, 80, 400], [0,-40,0], [0,0,10]);
+    this.addStaticBox([5000, 80, 5000], [0,-100,0], [0,0,0]);
+
   }
 
   addStaticBox(size, position, rotation) {
