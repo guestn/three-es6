@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@jpweeks/rstats": "^1.2.0",
+    "ammonext": "0.0.3",
     "autoprefixer": "7.1.6",
     "babel-core": "6.26.0",
     "babel-eslint": "7.2.3",

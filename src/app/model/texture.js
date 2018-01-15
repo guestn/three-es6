@@ -2,7 +2,7 @@ import * as THREE from 'three';
 // Promise polyfill for IE
 //import { Promise } from 'es6-promise';
 
-import { logProgress, logError } from '../../utils/helpers';
+import { logProgress } from '../../utils/helpers';
 import Config from '../../config';
 
 // This class preloads all textures in the imageFiles array in the Config via ES6 Promises.

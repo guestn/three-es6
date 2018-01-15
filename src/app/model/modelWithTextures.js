@@ -1,8 +1,5 @@
 import * as THREE from 'three';
 
-import Material from '../helpers/material';
-import MeshHelper from '../helpers/meshHelper';
-import Helpers from '../../utils/helpers';
 import Config from '../../config';
 import Texture from './texture';
 import Model from './model';
