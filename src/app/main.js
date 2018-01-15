@@ -73,10 +73,11 @@ export default class Main {
 
     // Physics
     this.physicsWorld = null;
-    this.ammoHeightData = null;
-    this.heightData = null;
+
 
     // Heightfield parameters
+    this.ammoHeightData = null;
+    this.heightData = null;
     this.terrainWidthExtents = 128;
     this.terrainDepthExtents = 128;
     this.terrainWidth = 128;
@@ -141,7 +142,6 @@ export default class Main {
     const terrainMesh = new THREE.Mesh( geometry, groundMaterial );
     terrainMesh.receiveShadow = true;
     this.scene.add( terrainMesh );
-    console.log(process.env)
 
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load( "../assets/textures/grid.png", texture => {
@@ -151,6 +151,8 @@ export default class Main {
       groundMaterial.map = texture;
       groundMaterial.needsUpdate = true;
     });
+
+    this.generateExtrusion();
 
     document.addEventListener('DOMContentLoaded', () => {
       this.initPhysics();
@@ -205,6 +207,49 @@ export default class Main {
     // RAF
     requestAnimationFrame(this.animate.bind(this)); // Bind the main class instead of window object
   }
+
+
+  generateExtrusion() {
+
+    const splinePoints = [
+      new THREE.Vector3( 0 , 0, 0),
+      new THREE.Vector3( 3 , 0, -20),
+      new THREE.Vector3( 10 , 0, -50),
+      new THREE.Vector3( -10 , 0, -100),
+      new THREE.Vector3( 20 , 0, -150),
+    ]
+
+    const spline = new THREE.CatmullRomCurve3(splinePoints);
+
+    const extrudeSettings = {
+      steps			: 200,
+      bevelEnabled	: false,
+      extrudePath		: spline,
+      
+    };
+
+
+    const pts = [
+      new THREE.Vector2 ( -1, -15 ),
+      new THREE.Vector2 ( -10, -19),
+      new THREE.Vector2 ( -10, -20 ),
+      new THREE.Vector2 ( 0, -16 ),
+      new THREE.Vector2 ( 0, 16 ),
+      new THREE.Vector2 ( -10, 20 ),
+      new THREE.Vector2 ( -10, 19),
+      new THREE.Vector2 ( -1, 15 ),
+    ]
+
+    const shape = new THREE.Shape(pts);
+ 
+    const geometry = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
+    console.log(geometry)
+    const material2 = new THREE.MeshLambertMaterial( { color: 0xff8000, wireframe: false } );
+    const mesh = new THREE.Mesh( geometry, material2 );
+    this.scene.add( mesh );
+
+    //this.heightData = geometry.attributes.position.array;
+  }
   ////////////////////
   // Ammo Physics   //
   ///////////////////
@@ -218,7 +263,7 @@ export default class Main {
     broadphase = new Ammo.btDbvtBroadphase();
     solver = new Ammo.btSequentialImpulseConstraintSolver();
     this.physicsWorld = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-    this.physicsWorld.setGravity( new Ammo.btVector3( 0, -6, 0 ) );
+    this.physicsWorld.setGravity( this.gravity() );
 
     // Create the terrain body
     const groundShape = this.createTerrainShape( this.heightData );
@@ -232,6 +277,10 @@ export default class Main {
     const groundBody = new Ammo.btRigidBody( new Ammo.btRigidBodyConstructionInfo( groundMass, groundMotionState, groundShape, groundLocalInertia ) );
     this.physicsWorld.addRigidBody( groundBody );
 
+  }
+
+  gravity() {
+    return new Ammo.btVector3( 0, -10, 0 )
   }
 
   generateHeight( width, depth, minHeight, maxHeight ) {
@@ -261,6 +310,7 @@ export default class Main {
         p++;
       }
     }
+    console.log(data)
     return data;
   }
 
@@ -331,7 +381,11 @@ export default class Main {
     const shape = new Ammo.btSphereShape( radius );
     shape.setMargin( margin );
 
-    threeObject.position.set( ( Math.random() - 0.5 ) * this.terrainWidth * 0.6, this.terrainMaxHeight + objectSize + 2, ( Math.random() - 0.5 ) * this.terrainDepth * 0.6 );
+    threeObject.position.set( 
+      ( Math.random() - 0.5 ) * this.terrainWidth * 0.6, 
+      this.terrainMaxHeight + objectSize + 20, 
+      ( Math.random() - 0.5 ) * this.terrainDepth * 0.6 
+    );
 
     const mass = objectSize * 5;
     const localInertia = new Ammo.btVector3( 0, 0, 0 );
