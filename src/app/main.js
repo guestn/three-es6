@@ -78,10 +78,10 @@ export default class Main {
     // Heightfield parameters
     this.ammoHeightData = null;
     this.heightData = null;
-    this.terrainWidthExtents = 128;
+    this.terrainWidthExtents = 30;
     this.terrainDepthExtents = 128;
-    this.terrainWidth = 128;
-    this.terrainDepth = 128;
+    this.terrainWidth = 20;//128;
+    this.terrainDepth = 10;//128;
     this.terrainHalfWidth = this.terrainWidth / 2;
     this.terrainHalfDepth = this.terrainDepth / 2;
     this.terrainMaxHeight = 8;
@@ -130,7 +130,7 @@ export default class Main {
 
     this.heightData = this.generateHeight( this.terrainWidth, this.terrainDepth, this.terrainMinHeight, this.terrainMaxHeight );
 
-    const geometry = new THREE.PlaneBufferGeometry( this.terrainWidth, this.terrainDepth, this.terrainWidth - 1, this.terrainDepth - 1 );
+    const geometry = new THREE.PlaneBufferGeometry( this.terrainWidthExtents, this.terrainDepthExtents, this.terrainWidth - 1, this.terrainDepth - 1 );
     geometry.rotateX( - Math.PI / 2 );
     const vertices = geometry.attributes.position.array;
     for ( let i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
@@ -152,7 +152,7 @@ export default class Main {
       groundMaterial.needsUpdate = true;
     });
 
-    this.generateExtrusion();
+    //this.generateExtrusion();
 
     document.addEventListener('DOMContentLoaded', () => {
       this.initPhysics();
@@ -222,7 +222,7 @@ export default class Main {
     const spline = new THREE.CatmullRomCurve3(splinePoints);
 
     const extrudeSettings = {
-      steps			: 200,
+      steps			: 10,
       bevelEnabled	: false,
       extrudePath		: spline,
       
@@ -240,15 +240,28 @@ export default class Main {
       new THREE.Vector2 ( -1, 15 ),
     ]
 
-    const shape = new THREE.Shape(pts);
+    const pts2 = [
+      new THREE.Vector2 ( -10, -20 ),
+      new THREE.Vector2 ( 0, -16 ),
+      new THREE.Vector2 ( 0, 16 ),
+      new THREE.Vector2 ( -10, 20 ),
+      new THREE.Vector2 ( 50, 0),
+    ]
+  
+    const shape = new THREE.Shape(pts2);
  
     const geometry = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
-    console.log(geometry)
+
+    // geometry.attributes.position.array.splice(318*0.8, 200)
+
+
+
     const material2 = new THREE.MeshLambertMaterial( { color: 0xff8000, wireframe: false } );
     const mesh = new THREE.Mesh( geometry, material2 );
+    mesh.receiveShadow = true;
     this.scene.add( mesh );
 
-    //this.heightData = geometry.attributes.position.array;
+    this.heightData = geometry.attributes.position.array;
   }
   ////////////////////
   // Ammo Physics   //
@@ -267,6 +280,7 @@ export default class Main {
 
     // Create the terrain body
     const groundShape = this.createTerrainShape( this.heightData );
+    console.log(groundShape)
     const groundTransform = new Ammo.btTransform();
     groundTransform.setIdentity();
     // Shifts the terrain, since bullet re-centers it on its bounding box.
@@ -280,7 +294,7 @@ export default class Main {
   }
 
   gravity() {
-    return new Ammo.btVector3( 0, -10, 0 )
+    return new Ammo.btVector3( 0, -100, 0 )
   }
 
   generateHeight( width, depth, minHeight, maxHeight ) {
@@ -297,13 +311,14 @@ export default class Main {
 
     var p = 0;
     for ( var j = 0; j < depth; j++ ) {
-      for ( var i = 0; i < width; i++ ) {
+      for ( var i = -width/2; i < width/2; i++ ) {
 
-        var radius = Math.sqrt(
-            Math.pow( ( i - w2 ) / w2, 2.0 ) +
-            Math.pow( ( j - d2 ) / d2, 2.0 ) );
+        // var radius = Math.sqrt(
+        //     Math.pow( ( i - w2 ) / w2, 2.0 ) +
+        //     Math.pow( ( j - d2 ) / d2, 2.0 ) );
 
-        var height = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5 * hRange + minHeight;
+        // var height = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5 * hRange + minHeight;
+        var height = j * 2 + 0.00001*Math.pow(i,6) + Math.random()
 
         data[ p ] = height;
 
@@ -338,10 +353,10 @@ export default class Main {
       for ( let i = 0; i < this.terrainWidth; i++ ) {
 
         // write 32-bit float data to memory
-        Ammo.HEAPF32[ this.ammoHeightData + p2 >> 2 ] = this.heightData[ p ];
+        Ammo.HEAPF32[ this.ammoHeightData + p2 >> 2] = this.heightData[ p ];
+        //Ammo.HEAPF32[ this.ammoHeightData + p2 ] = this.heightData[ p ];
 
         p++;
-
         // 4 bytes/float
         p2 += 4;
       }
@@ -381,13 +396,14 @@ export default class Main {
     const shape = new Ammo.btSphereShape( radius );
     shape.setMargin( margin );
 
-    threeObject.position.set( 
-      ( Math.random() - 0.5 ) * this.terrainWidth * 0.6, 
-      this.terrainMaxHeight + objectSize + 20, 
-      ( Math.random() - 0.5 ) * this.terrainDepth * 0.6 
-    );
+    // threeObject.position.set( 
+    //   ( Math.random() - 0.5 ) * this.terrainWidth * 0.6, 
+    //   this.terrainMaxHeight + objectSize + 20, 
+    //   ( Math.random() - 0.5 ) * this.terrainDepth * 0.6 
+    // );
+    threeObject.position.set(0,50,0);
 
-    const mass = objectSize * 5;
+    const mass = radius * 500;
     const localInertia = new Ammo.btVector3( 0, 0, 0 );
     shape.calculateLocalInertia( mass, localInertia );
     const transform = new Ammo.btTransform();
