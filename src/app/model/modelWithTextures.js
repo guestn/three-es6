@@ -53,7 +53,7 @@ export default class ModelWithTextures {
         console.log('loaded')
 
         // Everything is now fully loaded
-        Config.isLoaded = true;
+        //Config.isLoaded = true;
         //this.container.querySelector('#loader').classList.add('loaded');// = 'none';
 
         };

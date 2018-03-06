@@ -11,11 +11,13 @@ import Controls from './components/controls';
 
 // Helpers
 import Geometry from './helpers/geometry';
+import ShaderMaterial  from './helpers/ShaderMaterial';
 
 // Model
 import ModelWithTextures from './model/modelWithTextures';
 import Texture from './model/texture';
 import Model from './model/model';
+
 
 // Managers
 import Interaction from './managers/interaction';
@@ -70,7 +72,66 @@ export default class Main {
 
     this.geometry = new Geometry(this.scene);
     this.geometry.make('sphere')(20, 20, 10, 10);
-    this.geometry.place([0, 0, 40], [Math.PI / 2, 0, 0]);
+    this.geometry.place([40, 0, 0], [Math.PI / 2, 0, 0]);
+
+//========
+
+const loadTextureAsync  = (url) => {
+  return new Promise ((resolve, reject) => {
+
+    const onLoad = (texture) => resolve (texture)
+    const onError = (event) => reject (event)
+
+    new THREE.TextureLoader().load(url, onLoad, onError)
+  })
+}
+  new THREE.TextureLoader().load('./assets/textures/uvGrid.jpg', map => {
+
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+      map.mapping = THREE.UVMapping
+      console.log({map})
+      map.repeat.set(5,5)
+
+
+    const shaderMaterial = new THREE.ShaderMaterial({
+        uniforms: THREE.UniformsUtils.merge([
+          THREE.ShaderLib.lambert.uniforms,
+          
+          //{ diffuse: { value: new THREE.Color(0xffaa00) } },
+          //{ emissive: { value: new THREE.Color(0xff5500) } },
+          { shininess: { value: null } },
+          //{ normalMap: { value: map }},
+          { normalScale: { value: 10 }},
+          { map: { value: null } },
+          { offsetRepeat: { value: new THREE.Vector4(0,0,4,4) } },
+        ]),
+        vertexShader: THREE.ShaderLib['lambert'].vertexShader,
+        fragmentShader: THREE.ShaderLib['lambert'].fragmentShader,//,//new THREE.FileLoader().load('./assets/meshphong_frag.glsl'),//THREE.ShaderLib['phong'].fragmentShader,
+        side: THREE.DoubleSide,
+        lights: true,
+        needsUpdate: true,
+        defines: { USE_MAP: true }
+    });
+
+    shaderMaterial.uniforms['map'].value = map
+    shaderMaterial.uniforms['shininess'].value = 100
+    shaderMaterial.uniforms['uvTransform'].value = new THREE.Matrix3().set(2, 0, 0, 0, 2, 0, 0, 0, 2)
+
+    this.sphereGeo = new THREE.SphereBufferGeometry(20,20,10,10);
+    console.log(shaderMaterial)
+    const mesh = new THREE.Mesh(this.sphereGeo, shaderMaterial)
+    mesh.castShadow = true;
+    this.scene.add(mesh);
+
+    this.animate()
+})
+
+
+
+
+
+
+
 
     //Set up rStats if dev environment
     if(Config.isDev) {
@@ -100,16 +161,17 @@ export default class Main {
       });
     }
 
-    this.teapot = new ModelWithTextures({ 
-      scene: this.scene, 
-      manager: this.manager, 
-      textureName:'UV',
-      modelName: 'teapot',
-      rotation: [0,Math.PI/2, 0]
-    }).load();
+    // this.teapot = new ModelWithTextures({ 
+    //   scene: this.scene, 
+    //   manager: this.manager, 
+    //   textureName:'UV',
+    //   modelName: 'teapot',
+    //   rotation: [0,Math.PI/2, 0],
+    //   position: [-80, 0, 0]
+    // }).load();
 
     document.addEventListener('DOMContentLoaded', () => {
-      this.animate();
+      //this.animate();
     }, false);
 
 
