@@ -31,7 +31,6 @@ export default class ShaderMaterial {
         //console.log(map)
         //loadTextureAsync('./assets/textures/uvGrid.jpg').then(map => {
 
-          console.log({map})
 
           const shaderMaterial = new THREE.ShaderMaterial({
           //uniforms,
@@ -59,8 +58,8 @@ export default class ShaderMaterial {
           shaderMaterial.uniforms['map'].value = map
 
         //console.log(THREE.ShaderLib.phong.uniforms)
-        console.log(THREE.ShaderLib['phong'].vertexShader)
-        console.log(shaderMaterial)
+        //console.log(THREE.ShaderLib['phong'].vertexShader)
+        //console.log(shaderMaterial)
         shaderMaterial.needsUpdate = true;
         Config.isLoaded = true;
         return shaderMaterial;

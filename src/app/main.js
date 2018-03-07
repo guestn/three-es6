@@ -72,59 +72,82 @@ export default class Main {
 
     this.geometry = new Geometry(this.scene);
     this.geometry.make('sphere')(20, 20, 10, 10);
-    this.geometry.place([40, 0, 0], [Math.PI / 2, 0, 0]);
+    //this.geometry.place([40, 0, 0], [Math.PI / 2, 0, 0]);
 
 //========
 
-const loadTextureAsync  = (url) => {
-  return new Promise ((resolve, reject) => {
+  const loadTextureAsync  = (url) => {
+    return new Promise ((resolve, reject) => {
 
-    const onLoad = (texture) => resolve (texture)
-    const onError = (event) => reject (event)
+      const onLoad = (texture) => resolve (texture)
+      const onError = (event) => reject (event)
 
-    new THREE.TextureLoader().load(url, onLoad, onError)
-  })
-}
+      new THREE.TextureLoader().load(url, onLoad, onError)
+    })
+  }
+
+  let frag, vert;
+  const fileLoader = new THREE.FileLoader()
+  fileLoader.load('./assets/meshphong_frag.glsl', data => frag = data);
+  fileLoader.load('./assets/meshphong_vert.glsl', data => vert = data);
+
+  //fileLoader.load('./assets/phong_full_frag.glsl', data => frag = data);
+  //fileLoader.load('./assets/phong_full_vert.glsl', data => vert = data);
+let shaderMaterial;
   new THREE.TextureLoader().load('./assets/textures/uvGrid.jpg', map => {
 
     map.wrapS = map.wrapT = THREE.RepeatWrapping;
-      map.mapping = THREE.UVMapping
-      console.log({map})
-      map.repeat.set(5,5)
+    map.mapping = THREE.UVMapping;
 
+    shaderMaterial = new THREE.ShaderMaterial({
+      uniforms: THREE.UniformsUtils.merge([
+        THREE.ShaderLib.phong.uniforms,
 
-    const shaderMaterial = new THREE.ShaderMaterial({
-        uniforms: THREE.UniformsUtils.merge([
-          THREE.ShaderLib.lambert.uniforms,
-          
-          //{ diffuse: { value: new THREE.Color(0xffaa00) } },
-          //{ emissive: { value: new THREE.Color(0xff5500) } },
-          { shininess: { value: null } },
-          //{ normalMap: { value: map }},
-          { normalScale: { value: 10 }},
-          { map: { value: null } },
-          { offsetRepeat: { value: new THREE.Vector4(0,0,4,4) } },
-        ]),
-        vertexShader: THREE.ShaderLib['lambert'].vertexShader,
-        fragmentShader: THREE.ShaderLib['lambert'].fragmentShader,//,//new THREE.FileLoader().load('./assets/meshphong_frag.glsl'),//THREE.ShaderLib['phong'].fragmentShader,
-        side: THREE.DoubleSide,
-        lights: true,
-        needsUpdate: true,
-        defines: { USE_MAP: true }
+        //{ diffuse: { value: new THREE.Color(0xffaa00) } },
+        //{ emissive: { value: new THREE.Color(0xff5500) } },
+        { shininess: { value: null } },
+        //{ normalMap: { value: map }},
+        { normalScale: { value: 10 }},
+        { map: { value: null } },
+        { uvTransform: { value: null } },
+      ]),
+      vertexShader: vert,//THREE.ShaderLib['lambert'].vertexShader,
+      fragmentShader: frag,//THREE.ShaderLib['lambert'].fragmentShader,//,//new THREE.FileLoader().load('./assets/meshphong_frag.glsl'),//THREE.ShaderLib['phong'].fragmentShader,
+      side: THREE.DoubleSide,
+      lights: true,
+      //needsUpdate: true,
+      defines: { USE_MAP: true }
     });
 
-    shaderMaterial.uniforms['map'].value = map
-    shaderMaterial.uniforms['shininess'].value = 100
-    shaderMaterial.uniforms['uvTransform'].value = new THREE.Matrix3().set(2, 0, 0, 0, 2, 0, 0, 0, 2)
+    shaderMaterial.uniforms['map'].value = map;
+    shaderMaterial.uniforms['shininess'].value = 100;
+    shaderMaterial.uniforms['uvTransform'].value = new THREE.Matrix3().set(2, 0, 0, 0, 2, 0, 0, 0, 2); 
+    shaderMaterial.needsUpdate = true;
 
-    this.sphereGeo = new THREE.SphereBufferGeometry(20,20,10,10);
+    this.sphereGeo = new THREE.SphereBufferGeometry(20,20,10);
     console.log(shaderMaterial)
     const mesh = new THREE.Mesh(this.sphereGeo, shaderMaterial)
     mesh.castShadow = true;
     this.scene.add(mesh);
 
-    this.animate()
+    var helper = new THREE.VertexNormalsHelper( mesh, 2, 0x00ff00, 1 );
+    this.scene.add(helper);
+
+    const boxGeo = new THREE.BoxBufferGeometry(40,40,40);
+    const boxMesh = new THREE.Mesh(boxGeo, shaderMaterial);
+    boxMesh.position.set(-50,0,0)
+    this.scene.add(boxMesh);
+    var helper2 = new THREE.VertexNormalsHelper( boxMesh, 2, 0x00ff00, 1 );
+    this.scene.add(helper2);
+
+    const torusGeo = new THREE.TorusKnotBufferGeometry( 12, 6, 80, 16 );
+    const torusKnot = new THREE.Mesh( torusGeo, shaderMaterial );
+    torusKnot.position.set(50,5,0)
+    torusKnot.castShadow = true;
+    this.scene.add( torusKnot );
+
 })
+
 
 
 
@@ -171,7 +194,7 @@ const loadTextureAsync  = (url) => {
     // }).load();
 
     document.addEventListener('DOMContentLoaded', () => {
-      //this.animate();
+      this.animate();
     }, false);
 
 

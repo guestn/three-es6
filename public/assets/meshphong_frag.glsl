@@ -1,9 +1,11 @@
-#define PHONG
+﻿#define PHONG
 uniform vec3 diffuse;
 uniform vec3 emissive;
 uniform vec3 specular;
 uniform float shininess;
 uniform float opacity;
+
+
 #include <common>
 #include <packing>
 #include <dithering_pars_fragment>
@@ -34,18 +36,34 @@ void main() {
 	vec3 totalEmissiveRadiance = emissive;
 	#include <logdepthbuf_fragment>
 	#include <map_fragment>
+	vec2 posn = -1. + 2.0 * vUv;
+	//diffuseColor.r = smoothstep(0.8,0.85, vUv.y);
+	//normal = normalize( vNormal );
+	if (vUv.y < 0.4 && vUv.y > -0.4) {
+		diffuseColor.rgb = vec3(1.);
+	}
+
+//// <color_fragment> /////
 	#include <color_fragment>
-	#include <alphamap_fragment>
-	#include <alphatest_fragment>
+
+	//#include <alphamap_fragment>
+	//#include <alphatest_fragment>
 	#include <specularmap_fragment>
 	#include <normal_fragment>
 	#include <emissivemap_fragment>
+	//diffuseColor = smoothstep(0.2,0.25, diffuseColor);
+
 	#include <lights_phong_fragment>
 	#include <lights_template>
-	#include <aomap_fragment>
+	//#include <aomap_fragment>
 	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
-	#include <envmap_fragment>
-	gl_FragColor = vec4( outgoingLight, diffuseColor.a );
+	//#include <envmap_fragment>
+			//vec2 posn = -1. + 2.0 * vUv;
+
+	//outgoingLight = smoothstep(0.5,0.55, outgoingLight);
+	//float snow = smoothstep(1.0, 1.0, posn.y);
+	vec3 color = outgoingLight;//mix(vec3(snow), outgoingLight, 1.0);
+	gl_FragColor = vec4( color, diffuseColor.a );
 	#include <tonemapping_fragment>
 	#include <encodings_fragment>
 	#include <fog_fragment>
