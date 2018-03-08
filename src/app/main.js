@@ -94,20 +94,25 @@ export default class Main {
   //fileLoader.load('./assets/phong_full_frag.glsl', data => frag = data);
   //fileLoader.load('./assets/phong_full_vert.glsl', data => vert = data);
 let shaderMaterial;
-  new THREE.TextureLoader().load('./assets/textures/uvGrid.jpg', map => {
-
-    map.wrapS = map.wrapT = THREE.RepeatWrapping;
-    map.mapping = THREE.UVMapping;
+  //new THREE.TextureLoader().load('./assets/textures/uvGrid.jpg', map => {
+  new THREE.TextureLoader().load('./assets/textures/rock-diffuse.jpg', map => {
+  new THREE.TextureLoader().load('./assets/textures/rock-bump.jpg', bumpMap => {
+  new THREE.TextureLoader().load('./assets/textures/rock-normal.jpg', normalMap => {
+  new THREE.TextureLoader().load('./assets/textures/snow-normal.jpg', snowNormalMap => {
 
     shaderMaterial = new THREE.ShaderMaterial({
       uniforms: THREE.UniformsUtils.merge([
         THREE.ShaderLib.phong.uniforms,
 
-        //{ diffuse: { value: new THREE.Color(0xffaa00) } },
+        { diffuse: { value: new THREE.Color(0xffffff) } },
         //{ emissive: { value: new THREE.Color(0xff5500) } },
-        { shininess: { value: null } },
-        //{ normalMap: { value: map }},
-        { normalScale: { value: 10 }},
+        { shininess: { value: 50 } },
+        { bumpMap: { value: null }},
+        { bumpScale: { value: 10 }},
+        { normalMap: { value: null }},
+        { normalScale: { value: new THREE.Vector3( 2, 2 ) }},
+        { snowNormalMap: { value: null }},
+        { snowNormalScale: { value: new THREE.Vector3( 0.25, 0.25 ) }},
         { map: { value: null } },
         { uvTransform: { value: null } },
       ]),
@@ -115,13 +120,25 @@ let shaderMaterial;
       fragmentShader: frag,//THREE.ShaderLib['lambert'].fragmentShader,//,//new THREE.FileLoader().load('./assets/meshphong_frag.glsl'),//THREE.ShaderLib['phong'].fragmentShader,
       side: THREE.DoubleSide,
       lights: true,
-      //needsUpdate: true,
-      defines: { USE_MAP: true }
+      defines: { 
+        USE_MAP: true, 
+        USE_BUMPMAP: true, 
+        USE_NORMALMAP: true 
+      },
+      extensions: {
+        derivatives: true,
+      },
     });
 
+    const repeat = 1;
+
     shaderMaterial.uniforms['map'].value = map;
-    shaderMaterial.uniforms['shininess'].value = 100;
-    shaderMaterial.uniforms['uvTransform'].value = new THREE.Matrix3().set(2, 0, 0, 0, 2, 0, 0, 0, 2); 
+    shaderMaterial.uniforms['bumpMap'].value = bumpMap ;
+    shaderMaterial.uniforms['normalMap'].value = normalMap ;
+    shaderMaterial.uniforms['snowNormalMap'].value = snowNormalMap ;
+
+   // shaderMaterial.uniforms['shininess'].value = 100;
+    shaderMaterial.uniforms['uvTransform'].value = new THREE.Matrix3().set(repeat, 0, 0, 0, repeat, 0, 0, 0, repeat); 
     shaderMaterial.needsUpdate = true;
 
     this.sphereGeo = new THREE.SphereBufferGeometry(20,20,10);
@@ -156,6 +173,16 @@ let shaderMaterial;
 
     this.scene.add( cube )
 
+    const rock = new THREE.JSONLoader().load('./assets/models/rock.json', geometry => {
+      console.log(geometry)
+      const rock = new THREE.Mesh(geometry, shaderMaterial);
+      rock.scale.setScalar(3)
+      rock.position.set(0,0,-50)
+      this.scene.add(rock)
+    })
+})
+})
+})
 })
 
 

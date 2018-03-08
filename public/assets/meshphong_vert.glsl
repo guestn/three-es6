@@ -1,6 +1,6 @@
 #define PHONG
 varying vec3 vViewPosition;
-varying vec4 wNormal;
+varying vec4 worldNormal;
 #ifndef FLAT_SHADED
 	varying vec3 vNormal;
 #endif
@@ -40,5 +40,6 @@ void main() {
 	#include <envmap_vertex>
 	#include <shadowmap_vertex>
 	#include <fog_vertex>
-	wNormal = normalize( vec4(normal, 1.0) * modelMatrix );
+	// convert model normals to world normals
+	worldNormal = normalize( vec4(normal, 1.0) * modelMatrix );
 }
