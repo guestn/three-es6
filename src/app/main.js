@@ -135,7 +135,7 @@ let shaderMaterial;
 
     const boxGeo = new THREE.BoxBufferGeometry(40,40,40);
     const boxMesh = new THREE.Mesh(boxGeo, shaderMaterial);
-    boxMesh.position.set(-50,0,0)
+    boxMesh.position.set(-50,0,-70)
     this.scene.add(boxMesh);
     var helper2 = new THREE.VertexNormalsHelper( boxMesh, 2, 0x00ff00, 1 );
     this.scene.add(helper2);
@@ -145,6 +145,16 @@ let shaderMaterial;
     torusKnot.position.set(50,5,0)
     torusKnot.castShadow = true;
     this.scene.add( torusKnot );
+    var helper3 = new THREE.VertexNormalsHelper( torusKnot, 2, 0x00ff00, 1 );
+    this.scene.add(helper3);
+
+    var geometry = new THREE.ParametricBufferGeometry( klein, 25, 25 );
+    geometry.rotateX(0.4).rotateZ(-0.3)
+    var cube = new THREE.Mesh( geometry, shaderMaterial );
+    cube.scale.setScalar(3)
+    cube.position.set(-50,0,0)
+
+    this.scene.add( cube )
 
 })
 
@@ -239,4 +249,32 @@ let shaderMaterial;
     // RAF
     requestAnimationFrame(this.animate.bind(this)); // Bind the main class instead of window object
   }
+}
+
+
+const klein = ( v, u, optionalTarget ) => {
+
+  var result = optionalTarget || new THREE.Vector3();
+
+  u *= Math.PI;
+  v *= 2 * Math.PI;
+
+  u = u * 2;
+  var x, y, z;
+  if ( u < Math.PI ) {
+
+    x = 3 * Math.cos( u ) * ( 1 + Math.sin( u ) ) + ( 2 * ( 1 - Math.cos( u ) / 2 ) ) * Math.cos( u ) * Math.cos( v );
+    z = - 8 * Math.sin( u ) - 2 * ( 1 - Math.cos( u ) / 2 ) * Math.sin( u ) * Math.cos( v );
+
+  } else {
+
+    x = 3 * Math.cos( u ) * ( 1 + Math.sin( u ) ) + ( 2 * ( 1 - Math.cos( u ) / 2 ) ) * Math.cos( v + Math.PI );
+    z = - 8 * Math.sin( u );
+
+  }
+
+  y = - 2 * ( 1 - Math.cos( u ) / 2 ) * Math.sin( v );
+
+  return result.set( x, y, z );
+
 }

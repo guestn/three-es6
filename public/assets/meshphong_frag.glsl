@@ -5,6 +5,7 @@ uniform vec3 specular;
 uniform float shininess;
 uniform float opacity;
 
+varying vec4 wNormal;
 
 #include <common>
 #include <packing>
@@ -37,11 +38,22 @@ void main() {
 	#include <logdepthbuf_fragment>
 	#include <map_fragment>
 	vec2 posn = -1. + 2.0 * vUv;
-	//diffuseColor.r = smoothstep(0.8,0.85, vUv.y);
-	//normal = normalize( vNormal );
-	if (vUv.y < 0.4 && vUv.y > -0.4) {
-		diffuseColor.rgb = vec3(1.);
-	}
+
+	// random number
+	float rand = fract(sin(dot(posn, vec2(12.9898, 78.233))) * 43758.5453) * 0.1;
+
+	// snow direction v3
+	vec3 snowDir = vec3(0,1,0);
+
+	// get snow on top
+	vec3 snowColor = vec3(smoothstep(0.1, 0.12 + rand, dot(wNormal.xyz, snowDir)));
+
+	// get other color on bottom
+	vec3 mainColor = vec3(smoothstep(-(0.12 + rand), -0.1, - dot(wNormal.xyz, snowDir))) * diffuseColor.rgb;
+
+	//diffuseColor.rgb = vec3(smoothstep(0.1, 0.15, dot(wNormal.xyz, snowDir)));
+	// mix the two colors
+	diffuseColor.rgb = mix(snowColor * 2.0, mainColor * 2., 0.5);
 
 //// <color_fragment> /////
 	#include <color_fragment>
