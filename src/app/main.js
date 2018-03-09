@@ -12,6 +12,7 @@ import Controls from './components/controls';
 // Helpers
 import Geometry from './helpers/geometry';
 import ShaderMaterial  from './helpers/ShaderMaterial';
+import { promisifyLoader } from './helpers/helpers';
 
 // Model
 import ModelWithTextures from './model/modelWithTextures';
@@ -94,11 +95,17 @@ export default class Main {
   //fileLoader.load('./assets/phong_full_frag.glsl', data => frag = data);
   //fileLoader.load('./assets/phong_full_vert.glsl', data => vert = data);
 let shaderMaterial;
-  //new THREE.TextureLoader().load('./assets/textures/uvGrid.jpg', map => {
-  new THREE.TextureLoader().load('./assets/textures/rock-diffuse.jpg', map => {
-  new THREE.TextureLoader().load('./assets/textures/rock-bump.jpg', bumpMap => {
-  new THREE.TextureLoader().load('./assets/textures/rock-normal.jpg', normalMap => {
-  new THREE.TextureLoader().load('./assets/textures/snow-normal.jpg', snowNormalMap => {
+  const loadingManager = new THREE.LoadingManager();
+
+  const TexturePromiseLoader = promisifyLoader( new THREE.TextureLoader(loadingManager) );
+
+  const diffuseMap = TexturePromiseLoader.load( './assets/textures/rock-diffuse.jpg' );
+  const bumpMap = TexturePromiseLoader.load( './assets/textures/rock-bump.jpg' );
+  const normalMap = TexturePromiseLoader.load( './assets/textures/rock-normal.jpg' );
+  const snowNormalMap = TexturePromiseLoader.load( './assets/textures/snow-normal.jpg' );
+
+  Promise.all([diffuseMap, bumpMap, normalMap, snowNormalMap])
+  .then(([diffuseMap, bumpMap, normalMap, snowNormalMap]) => {
 
     shaderMaterial = new THREE.ShaderMaterial({
       uniforms: THREE.UniformsUtils.merge([
@@ -132,7 +139,7 @@ let shaderMaterial;
 
     const repeat = 1;
 
-    shaderMaterial.uniforms['map'].value = map;
+    shaderMaterial.uniforms['map'].value = diffuseMap;
     shaderMaterial.uniforms['bumpMap'].value = bumpMap ;
     shaderMaterial.uniforms['normalMap'].value = normalMap ;
     shaderMaterial.uniforms['snowNormalMap'].value = snowNormalMap ;
@@ -168,6 +175,7 @@ let shaderMaterial;
     var geometry = new THREE.ParametricBufferGeometry( klein, 25, 25 );
     geometry.rotateX(0.4).rotateZ(-0.3)
     var cube = new THREE.Mesh( geometry, shaderMaterial );
+    cube.castShadow = true;
     cube.scale.setScalar(3)
     cube.position.set(-50,0,0)
 
@@ -178,11 +186,9 @@ let shaderMaterial;
       const rock = new THREE.Mesh(geometry, shaderMaterial);
       rock.scale.setScalar(3)
       rock.position.set(0,0,-50)
+      rock.castShadow = true;
       this.scene.add(rock)
     })
-})
-})
-})
 })
 
 
