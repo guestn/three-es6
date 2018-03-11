@@ -12,7 +12,8 @@ import Controls from './components/controls';
 // Helpers
 import Geometry from './helpers/geometry';
 import ShaderMaterial  from './helpers/ShaderMaterial';
-import { promisifyLoader } from './helpers/helpers';
+import { promisifyLoader, klein, rand } from './helpers/helpers';
+import Snow from './helpers/snow';
 
 // Model
 import ModelWithTextures from './model/modelWithTextures';
@@ -30,8 +31,7 @@ import Config from './../config';
 // stats
 import rStats from '@jpweeks/rstats';
 // -- End of imports
-// Local vars for rStats
-let rS, bS, glS, tS;
+
 
 
 // This class instantiates and ties all of the components together, starts the loading process and renders the main loop
@@ -66,33 +66,33 @@ export default class Main {
       this.light.place(lights[i]);
     }
 
-    // Create and place geo in scene
-    this.geometry = new Geometry(this.scene);
-    this.geometry.make('plane')(150, 150, 10, 10);
-    this.geometry.place([0, -20, 0], [Math.PI / 2, 0, 0]);
+    this.createStats();
+    const textures = this.loadTextures();
+    this.createWorld(textures);
 
-    this.geometry = new Geometry(this.scene);
-    this.geometry.make('sphere')(20, 20, 10, 10);
-    //this.geometry.place([40, 0, 0], [Math.PI / 2, 0, 0]);
+  }
 
-//========
-
-    let frag, vert;
+  loadTextures() {
     const fileLoader = new THREE.FileLoader();
-    fileLoader.load('./assets/meshphong_frag.glsl', data => frag = data);
-    fileLoader.load('./assets/meshphong_vert.glsl', data => vert = data);
+    fileLoader.load('./assets/meshphong_frag.glsl', data => this.frag = data);
+    fileLoader.load('./assets/meshphong_vert.glsl', data => this.vert = data);
 
     //fileLoader.load('./assets/phong_full_frag.glsl', data => frag = data);
     //fileLoader.load('./assets/phong_full_vert.glsl', data => vert = data);
 
     const TexturePromiseLoader = promisifyLoader(new THREE.TextureLoader());
 
-    const diffuseMap = TexturePromiseLoader.load( './assets/textures/rock-diffuse.jpg' );
-    const bumpMap = TexturePromiseLoader.load( './assets/textures/rock-bump.jpg' );
-    const normalMap = TexturePromiseLoader.load( './assets/textures/rock-normal.jpg' );
+    const diffuseMap = TexturePromiseLoader.load( './assets/textures/rockwall/rockwall-diffuse.jpg' );
+    const bumpMap = TexturePromiseLoader.load( './assets/textures/rockwall/rockwall-AO.jpg' );
+    const normalMap = TexturePromiseLoader.load( './assets/textures/rockwall/rockwall-normal.jpg' );
     const snowNormalMap = TexturePromiseLoader.load( './assets/textures/snow-normal.jpg' );
 
-    Promise.all([diffuseMap, bumpMap, normalMap, snowNormalMap])
+    this.textures = [diffuseMap, bumpMap, normalMap, snowNormalMap];
+    return this.textures;
+  }
+
+  createWorld(textures) {
+    Promise.all(textures)
     .then(([diffuseMap, bumpMap, normalMap, snowNormalMap]) => {
 
       const shaderMaterial = new THREE.ShaderMaterial({
@@ -111,8 +111,8 @@ export default class Main {
           { map: { value: null } },
           { uvTransform: { value: null } },
         ]),
-        vertexShader: vert,//THREE.ShaderLib['lambert'].vertexShader,
-        fragmentShader: frag,//THREE.ShaderLib['lambert'].fragmentShader,//,//new THREE.FileLoader().load('./assets/meshphong_frag.glsl'),//THREE.ShaderLib['phong'].fragmentShader,
+        vertexShader: this.vert,//THREE.ShaderLib['lambert'].vertexShader,
+        fragmentShader: this.frag,//THREE.ShaderLib['lambert'].fragmentShader,//,//new THREE.FileLoader().load('./assets/meshphong_frag.glsl'),//THREE.ShaderLib['phong'].fragmentShader,
         side: THREE.DoubleSide,
         lights: true,
         defines: { 
@@ -158,6 +158,8 @@ export default class Main {
       var helper3 = new THREE.VertexNormalsHelper( torusKnot, 2, 0x00ff00, 1 );
       this.scene.add(helper3);
 
+      console.log({helper3})
+
       var geometry = new THREE.ParametricBufferGeometry( klein, 25, 25 );
       geometry.rotateX(0.4).rotateZ(-0.3);
       var cube = new THREE.Mesh( geometry, shaderMaterial );
@@ -175,11 +177,25 @@ export default class Main {
         rock.castShadow = true;
         this.scene.add(rock)
       })
-    })
 
+      this.geometry = new Geometry(this.scene);
+      this.geometry.make('plane')(150, 150, 10, 10);
+      this.geometry.place([0, -20, 0], [Math.PI / 2, 0, 0]);
+
+
+//////////////////---------------------------------
+      //const texture = new THREE.TextureLoader().load( './assets/textures/rock-diffuse.jpg' );
+      this.snow = new Snow(this.scene);
+
+      this.animate();
+
+    })
+  }
+    
+  createStats() {
     //Set up rStats if dev environment
     if(Config.isDev) {
-      rS = new rStats({
+      this.rS = new rStats({
         CSSPath: './assets/css/',
         userTimingAPI: true,
         values: {
@@ -199,24 +215,12 @@ export default class Main {
         ],
       });
     }
-
-    // this.teapot = new ModelWithTextures({ 
-    //   scene: this.scene, 
-    //   manager: this.manager, 
-    //   textureName:'UV',
-    //   modelName: 'teapot',
-    //   rotation: [0,Math.PI/2, 0],
-    //   position: [-80, 0, 0]
-    // }).load();
-
-    document.addEventListener('DOMContentLoaded', () => {
-      this.animate();
-    }, false);
-
   }
 
 
   animate() {
+    const rS = this.rS;
+
     // Render rStats if Dev
     if (Config.isDev) {
       rS('frame').start();
@@ -247,41 +251,12 @@ export default class Main {
 
     const elapsedTime = this.clock.getElapsedTime();
 
-    //particleSystem.material.uniforms.elapsedTime.value = elapsedTime * 10;
+    this.snow.update(delta);
 
-    // Call any vendor or module updates here
     TWEEN.update();
     this.controls.threeControls.update();
 
     // RAF
     requestAnimationFrame(this.animate.bind(this)); // Bind the main class instead of window object
   }
-}
-
-
-const klein = ( v, u, optionalTarget ) => {
-
-  var result = optionalTarget || new THREE.Vector3();
-
-  u *= Math.PI;
-  v *= 2 * Math.PI;
-
-  u = u * 2;
-  var x, y, z;
-  if ( u < Math.PI ) {
-
-    x = 3 * Math.cos( u ) * ( 1 + Math.sin( u ) ) + ( 2 * ( 1 - Math.cos( u ) / 2 ) ) * Math.cos( u ) * Math.cos( v );
-    z = - 8 * Math.sin( u ) - 2 * ( 1 - Math.cos( u ) / 2 ) * Math.sin( u ) * Math.cos( v );
-
-  } else {
-
-    x = 3 * Math.cos( u ) * ( 1 + Math.sin( u ) ) + ( 2 * ( 1 - Math.cos( u ) / 2 ) ) * Math.cos( v + Math.PI );
-    z = - 8 * Math.sin( u );
-
-  }
-
-  y = - 2 * ( 1 - Math.cos( u ) / 2 ) * Math.sin( v );
-
-  return result.set( x, y, z );
-
 }

@@ -1,3 +1,8 @@
+#if CC_TARGET_PLATFORM == CC_PLATFORM_MAC
+"#version 120\n"
+#endif
+glEnable(GL_POINT_SPRITE) and glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
+
 uniform float radiusX;
 uniform float radiusZ;
 uniform float size;

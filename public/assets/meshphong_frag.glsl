@@ -11,6 +11,7 @@ varying vec4 worldNormal; // custom from vert shader
 vec3 snowDir = vec3(0,1,0);
 // snowDepth
 float snowDepth = 0.1;
+float overlap = 1.2; //percentage overlap
 
 
 #include <common>
@@ -75,8 +76,8 @@ float snowDepth = 0.1;
 
 		vec3 mapN2 = texture2D( snowNormalMap, vUv ).xyz * 2.0 - 1.0;
 
-		mapN = vec3(smoothstep(-(snowDepth * 1.2), -snowDepth, - dot(worldNormal.xyz, snowDir))) * mapN;
-		mapN2 = vec3(smoothstep(snowDepth, snowDepth * 1.2, dot(worldNormal.xyz, snowDir))) * mapN2;
+		mapN = vec3(smoothstep(-(snowDepth * overlap), -snowDepth, - dot(worldNormal.xyz, snowDir))) * mapN;
+		mapN2 = vec3(smoothstep(snowDepth, snowDepth * overlap, dot(worldNormal.xyz, snowDir))) * mapN2;
 		
 		mapN.xy = normalScale * mapN.xy;
 		mapN2.xy = snowNormalScale * mapN2.xy;
@@ -106,10 +107,10 @@ void main() {
 	float random = fract(sin(dot(posn, vec2(12.9898, 78.233))) * 43758.5453) * 0.1;
 
 	// get snow on top
-	vec3 snowColor = vec3(smoothstep(snowDepth, snowDepth * 1.2 + random, dot(worldNormal.xyz, snowDir)));
+	vec3 snowColor = vec3(smoothstep(snowDepth, snowDepth * overlap + random, dot(worldNormal.xyz, snowDir)));
 
 	// get other color on bottom
-	vec3 mainColor = vec3(smoothstep(-(snowDepth * 1.2 + random), -snowDepth, - dot(worldNormal.xyz, snowDir))) * diffuseColor.rgb;
+	vec3 mainColor = vec3(smoothstep(-(snowDepth * overlap + random), -snowDepth, - dot(worldNormal.xyz, snowDir))) * diffuseColor.rgb;
 
 	// mix the two colors
 	diffuseColor.rgb = mix(snowColor * 2.0, mainColor * 2.0, 0.5);

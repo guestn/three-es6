@@ -50,7 +50,7 @@ export default {
     }
   },
   fog: {
-    color: 0xffffff,
+    color: 0x444444,
     near: 0.0008
   },
   camera: {
