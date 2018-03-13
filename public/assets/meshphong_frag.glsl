@@ -125,7 +125,7 @@ void main() {
 	#include <emissivemap_fragment>
 	#include <lights_phong_fragment>
 	#include <lights_template>
-	//#include <aomap_fragment>
+	#include <aomap_fragment>
 	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;  // orig
 	//#include <envmap_fragment>
 

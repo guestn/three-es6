@@ -35,28 +35,20 @@ import { freemem } from 'os';
 // -- End of imports
 
 
-// This class instantiates and ties all of the components together, starts the loading process and renders the main loop
 export default class Main {
   constructor(container) {
-    // Set container property to container element
     this.container = container;
-
-    // Start Three clock
     this.clock = new THREE.Clock();
 
-    // Main scene creation
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(Config.fog.color, Config.fog.near);
 
-    // Get Device Pixel Ratio first for retina
     if (window.devicePixelRatio) {
       Config.dpr = window.devicePixelRatio;
     }
 
-    // Main renderer instantiation
     this.renderer = new Renderer(this.scene, container);
 
-    // Components instantiation
     this.camera = new Camera(this.renderer.threeRenderer, container);
     this.controls = new Controls(this.camera.threeCamera, container);
     this.light = new Light(this.scene);
@@ -75,12 +67,10 @@ export default class Main {
 
   loadTexturesAndFiles() {
     const FilePromiseLoader = promisifyLoader(new THREE.FileLoader())
-
     const vertexShader = FilePromiseLoader.load('./assets/meshphong_vert.glsl');
     const fragmentShader = FilePromiseLoader.load('./assets/meshphong_frag.glsl');
 
     const TexturePromiseLoader = promisifyLoader(new THREE.TextureLoader());
-
     const diffuseMap = TexturePromiseLoader.load( './assets/textures/rockwall/rockwall-diffuse.jpg' );
     const bumpMap = TexturePromiseLoader.load( './assets/textures/rockwall/rockwall-AO.jpg' );
     const normalMap = TexturePromiseLoader.load( './assets/textures/rockwall/rockwall-normal.jpg' );
@@ -88,6 +78,14 @@ export default class Main {
 
     this.texturesAndFiles = [diffuseMap, bumpMap, normalMap, snowNormalMap, vertexShader, fragmentShader];
     return this.texturesAndFiles;
+  }
+
+  createMaterials(texturesAndFiles) {
+    // const snowShaderMat = new ShaderMaterial({ 
+    //   maps: { diffuseMap, bumpMap, normalMap, snowNormalMap }, 
+    //   shaders: { vertexShader, fragmentShader }
+    // });
+
   }
 
   createWorld(texturesAndFiles) {
@@ -99,31 +97,29 @@ export default class Main {
         shaders: { vertexShader, fragmentShader }
       });
 
-      this.sphereGeo = new THREE.SphereBufferGeometry(20,20,10);
-      const mesh = new THREE.Mesh(this.sphereGeo, snowShaderMat)
-      mesh.castShadow = true;
-      this.scene.add(mesh);
 
-      var helper = new THREE.VertexNormalsHelper( mesh, 2, 0x00ff00, 1 );
-      this.scene.add(helper);
-
+      const sphere = new Mesh({ 
+        type: 'SphereBufferGeometry', 
+        params: [20,20,10], 
+        material: snowShaderMat,
+        scene: this.scene,
+      });
+      
       const box = new Mesh({ 
         type: 'BoxBufferGeometry', 
         params: [40,40,40], 
         position: [-50, 0, -70],
-        material: snowShaderMat 
+        material: snowShaderMat,
+        scene: this.scene,
       });
-
-      this.scene.add(box)
 
       const torus = new Mesh({ 
         type: 'TorusKnotBufferGeometry', 
         params: [12, 6, 80, 16 ], 
         position: [50,5,0],
-        material: snowShaderMat 
+        material: snowShaderMat,
+        scene: this.scene,
       });
-
-      this.scene.add(torus);
 
       const parametric = new Mesh({ 
         type: 'ParametricBufferGeometry', 
@@ -131,45 +127,37 @@ export default class Main {
         geoRotate: [0.4,0,-0.3],
         position: [-50,0,0],
         scale: [3,3,3],
-        material: snowShaderMat 
+        material: snowShaderMat,
+        scene: this.scene,
       });
-
-      this.scene.add(parametric)
 
       const rock = new Mesh({ 
         type: 'JSON',
         url: './assets/models/rock.json',
         position: [0,0,-50],
         scale: [3,3,3],
-        material: snowShaderMat 
+        material: snowShaderMat,
+        scene: this.scene,
       });
 
-      this.scene.add(rock)
-
-      // const rock = new THREE.JSONLoader().load('./assets/models/rock.json', geometry => {
-      //   console.log(geometry)
-      //   const rock = new THREE.Mesh(geometry, snowShaderMat);
-      //   rock.scale.setScalar(3)
-      //   rock.position.set(0,0,-50)
-      //   rock.castShadow = true;
-      //   this.scene.add(rock)
-      // })
-
-      const ground = new THREE.PlaneBufferGeometry(150, 150, 10, 10);
       const groundMaterial = new THREE.MeshPhongMaterial({
         color: 0xffffff,
         emissive: 0x000022,
       })
-      const groundMesh = new THREE.Mesh(ground, groundMaterial);
-      groundMesh.position.set(0,-20,0);
-      groundMesh.rotation.set(-Math.PI / 2, 0, 0);
-      groundMesh.receiveShadow = true;
-      this.scene.add(groundMesh);
 
+      const ground = new Mesh({ 
+        type: 'PlaneBufferGeometry', 
+        params: [ 150, 150, 10, 10 ],
+        rotation: [-Math.PI/2, 0, 0],
+        position: [0,-20,0],
+        shadows: { receive: true, cast: false },
+        material: groundMaterial,
+        scene: this.scene,
+      });
 
 //////////////////---------------------------------
-      //const texture = new THREE.TextureLoader().load( './assets/textures/rock-diffuse.jpg' );
-      this.snow = new Snow(this.scene);
+
+      //this.snow = new Snow(this.scene);
 
       this.animate();
 
@@ -201,11 +189,25 @@ export default class Main {
     }
   }
 
-
   animate() {
+    const delta = this.clock.getDelta();
+    const elapsedTime = this.clock.getElapsedTime();
     const rS = this.rS;
 
-    // Render rStats if Dev
+    this.updateStatsStart(rS)
+    this.renderer.render(this.scene, this.camera.threeCamera);
+    this.updateStatsEnd(rS)
+    
+    if (this.snow) this.snow.update(delta);
+
+    TWEEN.update();
+    this.controls.threeControls.update();
+
+    // RAF
+    requestAnimationFrame(this.animate.bind(this)); // Bind the main class instead of window object
+  }
+
+  updateStatsStart(rS) {
     if (Config.isDev) {
       rS('frame').start();
       //glS.start();
@@ -215,11 +217,8 @@ export default class Main {
 
       rS('render').start();
     }
-
-    // Call render function and pass in created scene and camera
-    this.renderer.render(this.scene, this.camera.threeCamera);
-
-    // rStats has finished determining render call now
+  }
+  updateStatsEnd(rS) {
     if (Config.isDev) {
       rS('render').end(); // render finished
       rS('frame').end(); // frame finished
@@ -229,18 +228,5 @@ export default class Main {
       rS().update();
       rS('rStats').end();
     }
-
-    // Delta time is sometimes needed for certain updates
-    const delta = this.clock.getDelta();
-
-    const elapsedTime = this.clock.getElapsedTime();
-
-    this.snow.update(delta);
-
-    TWEEN.update();
-    this.controls.threeControls.update();
-
-    // RAF
-    requestAnimationFrame(this.animate.bind(this)); // Bind the main class instead of window object
   }
 }

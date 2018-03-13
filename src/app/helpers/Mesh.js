@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { promisifyLoader } from './helpers';
 
-
 export default class Mesh {
   constructor({ 
     type,
@@ -11,8 +10,10 @@ export default class Mesh {
     rotation = [0,0,0], 
     scale = [1,1,1], 
     geoRotate = [0,0,0],
-    shadows = true, 
-    material 
+    shadows = {receive: false, cast: true }, 
+    material,
+    scene = this.scene,
+    add = true,
   }) {
     this.position = position;
     this.rotation = rotation;
@@ -20,21 +21,21 @@ export default class Mesh {
     this.geoRotate = geoRotate;
     this.shadows = shadows;
     this.material = material;
+    this.scene = scene;
+    this.addObjectToScene = add;
     if (type === 'JSON') {
-      console.log({url})
-      const JSONPromiseLoader = promisifyLoader(new THREE.JSONLoader())
-      const geometry = JSONPromiseLoader.load(url)
-      .then((geo) => this.orientObject(geo))
-      // new THREE.JSONLoader().load(url, geometry => {
-      //   console.log('asda',geometry)
-      //   this.orientObject(geometry);
-      // })
+      this.initLoader(url);
     } else {
       const geometry = new THREE[type](...params);
       return this.orientObject(geometry);
     }
   }
   
+  async initLoader(url) {
+    const JSONPromiseLoader = promisifyLoader(new THREE.JSONLoader())
+    const geometry = await JSONPromiseLoader.load(url).catch(() => console.log('error loading ' + url))
+    return this.orientObject(geometry); 
+  }
 
   orientObject(geometry) {
     console.log({geometry})
@@ -47,8 +48,13 @@ export default class Mesh {
     mesh.position.set(...this.position);
     mesh.rotation.set(...this.rotation);
     mesh.scale.set(...this.scale);
-    mesh.castShadow = this.shadows;
+    mesh.castShadow = this.shadows.cast;
+    mesh.receiveShadow = this.shadows.receive;
 
-    return mesh;
+    
+
+    if (this.addObjectToScene) {
+      this.scene.add(mesh);
+    }
   }
 }

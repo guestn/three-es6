@@ -13,7 +13,7 @@ export default {
   easing: TWEEN.Easing.Quadratic.InOut,
   duration: 500,
   renderer: {
-    antialias: true,
+    antialias: false,
     alpha: true,
   },
   container: {
