@@ -14,6 +14,7 @@ import Geometry from './helpers/geometry';
 import ShaderMaterial  from './helpers/ShaderMaterial';
 import { promisifyLoader, klein, rand } from './helpers/helpers';
 import Snow from './helpers/snow';
+import Mesh from './helpers/Mesh';
 
 // Model
 import ModelWithTextures from './model/modelWithTextures';
@@ -30,8 +31,8 @@ import Config from './../config';
 
 // stats
 import rStats from '@jpweeks/rstats';
+import { freemem } from 'os';
 // -- End of imports
-
 
 
 // This class instantiates and ties all of the components together, starts the loading process and renders the main loop
@@ -67,18 +68,16 @@ export default class Main {
     }
 
     this.createStats();
-    const textures = this.loadTextures();
-    this.createWorld(textures);
+    const texturesAndFiles = this.loadTexturesAndFiles();
+    this.createWorld(texturesAndFiles);
 
   }
 
-  loadTextures() {
-    const fileLoader = new THREE.FileLoader();
-    fileLoader.load('./assets/meshphong_frag.glsl', data => this.frag = data);
-    fileLoader.load('./assets/meshphong_vert.glsl', data => this.vert = data);
+  loadTexturesAndFiles() {
+    const FilePromiseLoader = promisifyLoader(new THREE.FileLoader())
 
-    //fileLoader.load('./assets/phong_full_frag.glsl', data => frag = data);
-    //fileLoader.load('./assets/phong_full_vert.glsl', data => vert = data);
+    const vertexShader = FilePromiseLoader.load('./assets/meshphong_vert.glsl');
+    const fragmentShader = FilePromiseLoader.load('./assets/meshphong_frag.glsl');
 
     const TexturePromiseLoader = promisifyLoader(new THREE.TextureLoader());
 
@@ -87,100 +86,85 @@ export default class Main {
     const normalMap = TexturePromiseLoader.load( './assets/textures/rockwall/rockwall-normal.jpg' );
     const snowNormalMap = TexturePromiseLoader.load( './assets/textures/snow-normal.jpg' );
 
-    this.textures = [diffuseMap, bumpMap, normalMap, snowNormalMap];
-    return this.textures;
+    this.texturesAndFiles = [diffuseMap, bumpMap, normalMap, snowNormalMap, vertexShader, fragmentShader];
+    return this.texturesAndFiles;
   }
 
-  createWorld(textures) {
-    Promise.all(textures)
-    .then(([diffuseMap, bumpMap, normalMap, snowNormalMap]) => {
+  createWorld(texturesAndFiles) {
+    Promise.all(texturesAndFiles)
+    .then(([diffuseMap, bumpMap, normalMap, snowNormalMap, vertexShader,fragmentShader]) => {
 
-      const shaderMaterial = new THREE.ShaderMaterial({
-        uniforms: THREE.UniformsUtils.merge([
-          THREE.ShaderLib.phong.uniforms,
-
-          { diffuse: { value: new THREE.Color(0xffffff) } },
-          //{ emissive: { value: new THREE.Color(0xff5500) } },
-          { shininess: { value: 50 } },
-          { bumpMap: { value: null }},
-          { bumpScale: { value: 10 }},
-          { normalMap: { value: null }},
-          { normalScale: { value: new THREE.Vector3( 2, 2 ) }},
-          { snowNormalMap: { value: null }},
-          { snowNormalScale: { value: new THREE.Vector3( 0.25, 0.25 ) }},
-          { map: { value: null } },
-          { uvTransform: { value: null } },
-        ]),
-        vertexShader: this.vert,//THREE.ShaderLib['lambert'].vertexShader,
-        fragmentShader: this.frag,//THREE.ShaderLib['lambert'].fragmentShader,//,//new THREE.FileLoader().load('./assets/meshphong_frag.glsl'),//THREE.ShaderLib['phong'].fragmentShader,
-        side: THREE.DoubleSide,
-        lights: true,
-        defines: { 
-          USE_MAP: true, 
-          USE_BUMPMAP: true, 
-          USE_NORMALMAP: true 
-        },
-        extensions: {
-          derivatives: true,
-        },
+      const snowShaderMat = new ShaderMaterial({ 
+        maps: { diffuseMap, bumpMap, normalMap, snowNormalMap }, 
+        shaders: { vertexShader, fragmentShader }
       });
 
-      const repeat = 1;
-
-      shaderMaterial.uniforms['map'].value = diffuseMap;
-      shaderMaterial.uniforms['bumpMap'].value = bumpMap ;
-      shaderMaterial.uniforms['normalMap'].value = normalMap ;
-      shaderMaterial.uniforms['snowNormalMap'].value = snowNormalMap ;
-      shaderMaterial.uniforms['uvTransform'].value = new THREE.Matrix3().set(repeat, 0, 0, 0, repeat, 0, 0, 0, repeat); 
-      shaderMaterial.needsUpdate = true;
-
       this.sphereGeo = new THREE.SphereBufferGeometry(20,20,10);
-      console.log(shaderMaterial)
-      const mesh = new THREE.Mesh(this.sphereGeo, shaderMaterial)
+      const mesh = new THREE.Mesh(this.sphereGeo, snowShaderMat)
       mesh.castShadow = true;
       this.scene.add(mesh);
 
       var helper = new THREE.VertexNormalsHelper( mesh, 2, 0x00ff00, 1 );
       this.scene.add(helper);
 
-      const boxGeo = new THREE.BoxBufferGeometry(40,40,40);
-      const boxMesh = new THREE.Mesh(boxGeo, shaderMaterial);
-      boxMesh.position.set(-50,0,-70)
-      this.scene.add(boxMesh);
-      var helper2 = new THREE.VertexNormalsHelper( boxMesh, 2, 0x00ff00, 1 );
-      this.scene.add(helper2);
+      const box = new Mesh({ 
+        type: 'BoxBufferGeometry', 
+        params: [40,40,40], 
+        position: [-50, 0, -70],
+        material: snowShaderMat 
+      });
 
-      const torusGeo = new THREE.TorusKnotBufferGeometry( 12, 6, 80, 16 );
-      const torusKnot = new THREE.Mesh( torusGeo, shaderMaterial );
-      torusKnot.position.set(50,5,0)
-      torusKnot.castShadow = true;
-      this.scene.add( torusKnot );
-      var helper3 = new THREE.VertexNormalsHelper( torusKnot, 2, 0x00ff00, 1 );
-      this.scene.add(helper3);
+      this.scene.add(box)
 
-      console.log({helper3})
+      const torus = new Mesh({ 
+        type: 'TorusKnotBufferGeometry', 
+        params: [12, 6, 80, 16 ], 
+        position: [50,5,0],
+        material: snowShaderMat 
+      });
 
-      var geometry = new THREE.ParametricBufferGeometry( klein, 25, 25 );
-      geometry.rotateX(0.4).rotateZ(-0.3);
-      var cube = new THREE.Mesh( geometry, shaderMaterial );
-      cube.castShadow = true;
-      cube.scale.setScalar(3)
-      cube.position.set(-50,0,0)
+      this.scene.add(torus);
 
-      this.scene.add( cube )
+      const parametric = new Mesh({ 
+        type: 'ParametricBufferGeometry', 
+        params: [ klein, 25, 25 ],
+        geoRotate: [0.4,0,-0.3],
+        position: [-50,0,0],
+        scale: [3,3,3],
+        material: snowShaderMat 
+      });
 
-      const rock = new THREE.JSONLoader().load('./assets/models/rock.json', geometry => {
-        console.log(geometry)
-        const rock = new THREE.Mesh(geometry, shaderMaterial);
-        rock.scale.setScalar(3)
-        rock.position.set(0,0,-50)
-        rock.castShadow = true;
-        this.scene.add(rock)
+      this.scene.add(parametric)
+
+      const rock = new Mesh({ 
+        type: 'JSON',
+        url: './assets/models/rock.json',
+        position: [0,0,-50],
+        scale: [3,3,3],
+        material: snowShaderMat 
+      });
+
+      this.scene.add(rock)
+
+      // const rock = new THREE.JSONLoader().load('./assets/models/rock.json', geometry => {
+      //   console.log(geometry)
+      //   const rock = new THREE.Mesh(geometry, snowShaderMat);
+      //   rock.scale.setScalar(3)
+      //   rock.position.set(0,0,-50)
+      //   rock.castShadow = true;
+      //   this.scene.add(rock)
+      // })
+
+      const ground = new THREE.PlaneBufferGeometry(150, 150, 10, 10);
+      const groundMaterial = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        emissive: 0x000022,
       })
-
-      this.geometry = new Geometry(this.scene);
-      this.geometry.make('plane')(150, 150, 10, 10);
-      this.geometry.place([0, -20, 0], [Math.PI / 2, 0, 0]);
+      const groundMesh = new THREE.Mesh(ground, groundMaterial);
+      groundMesh.position.set(0,-20,0);
+      groundMesh.rotation.set(-Math.PI / 2, 0, 0);
+      groundMesh.receiveShadow = true;
+      this.scene.add(groundMesh);
 
 
 //////////////////---------------------------------
