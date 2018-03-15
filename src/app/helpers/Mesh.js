@@ -38,7 +38,6 @@ export default class Mesh {
   }
 
   orientObject(geometry) {
-    console.log({geometry})
     if (this.geoRotate) {
       geometry.rotateX(this.geoRotate[0])
       geometry.rotateY(this.geoRotate[1])
@@ -50,8 +49,6 @@ export default class Mesh {
     mesh.scale.set(...this.scale);
     mesh.castShadow = this.shadows.cast;
     mesh.receiveShadow = this.shadows.receive;
-
-    
 
     if (this.addObjectToScene) {
       this.scene.add(mesh);

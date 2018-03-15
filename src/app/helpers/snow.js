@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { promisifyLoader } from './helpers';
 
-
 export default class Snow {
   constructor(scene) {
     //let sprite1 = new THREE.ImageLoader().load( './assets/textures/rock-diffuse.jpg' );
@@ -34,7 +33,7 @@ export default class Snow {
       [ [0.90, 0.05, 0.5], sprite1, 0.3 ],
     ];
     for ( let i = 0; i < parameters.length; i ++ ) {
-      const color  = parameters[i][0];
+     // const color  = parameters[i][0];
       const sprite = parameters[i][1];
       const size   = parameters[i][2];
       materials[i] = new THREE.PointsMaterial( { 
@@ -77,8 +76,4 @@ export default class Snow {
   getVertices() {
     return this.geometry.vertices;
   }
-}
-
-const rand = ( v ) => {
-  return (v * (Math.random() - 0.5));
 }

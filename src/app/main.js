@@ -10,28 +10,23 @@ import Light from './components/light';
 import Controls from './components/controls';
 
 // Helpers
-import Geometry from './helpers/geometry';
-import ShaderMaterial  from './helpers/ShaderMaterial';
-import { promisifyLoader, klein, rand } from './helpers/helpers';
+import { promisifyLoader, klein } from './helpers/helpers';
 import Snow from './helpers/snow';
 import Mesh from './helpers/Mesh';
 
-// Model
-import ModelWithTextures from './model/modelWithTextures';
-import Texture from './model/texture';
-import Model from './model/model';
-
+// Materials
+import ShaderMaterial from './materials/ShaderMaterial';
 
 // Managers
-import Interaction from './managers/interaction';
-import DatGUI from './managers/datGUI';
+// import Interaction from './managers/interaction';
+// import DatGUI from './managers/datGUI';
 
 // data
 import Config from './../config';
 
 // stats
 import rStats from '@jpweeks/rstats';
-import { freemem } from 'os';
+// import { freemem } from 'os';
 // -- End of imports
 
 
@@ -55,14 +50,13 @@ export default class Main {
 
     // Create and place lights in scene
     const lights = ['ambient', 'directional', 'point', 'hemi'];
-    for (let i = 0; i < lights.length; i++) {
-      this.light.place(lights[i]);
-    }
+    lights.forEach(light => (
+      this.light.place(light)
+    ));
 
     this.createStats();
     const texturesAndFiles = this.loadTexturesAndFiles();
-    this.createWorld(texturesAndFiles);
-
+    this.createMaterials(texturesAndFiles)
   }
 
   loadTexturesAndFiles() {
@@ -81,63 +75,12 @@ export default class Main {
   }
 
   createMaterials(texturesAndFiles) {
-    // const snowShaderMat = new ShaderMaterial({ 
-    //   maps: { diffuseMap, bumpMap, normalMap, snowNormalMap }, 
-    //   shaders: { vertexShader, fragmentShader }
-    // });
-
-  }
-
-  createWorld(texturesAndFiles) {
     Promise.all(texturesAndFiles)
-    .then(([diffuseMap, bumpMap, normalMap, snowNormalMap, vertexShader,fragmentShader]) => {
+    .then(([diffuseMap, bumpMap, normalMap, snowNormalMap, vertexShader, fragmentShader]) => {
 
       const snowShaderMat = new ShaderMaterial({ 
         maps: { diffuseMap, bumpMap, normalMap, snowNormalMap }, 
         shaders: { vertexShader, fragmentShader }
-      });
-
-
-      const sphere = new Mesh({ 
-        type: 'SphereBufferGeometry', 
-        params: [20,20,10], 
-        material: snowShaderMat,
-        scene: this.scene,
-      });
-      
-      const box = new Mesh({ 
-        type: 'BoxBufferGeometry', 
-        params: [40,40,40], 
-        position: [-50, 0, -70],
-        material: snowShaderMat,
-        scene: this.scene,
-      });
-
-      const torus = new Mesh({ 
-        type: 'TorusKnotBufferGeometry', 
-        params: [12, 6, 80, 16 ], 
-        position: [50,5,0],
-        material: snowShaderMat,
-        scene: this.scene,
-      });
-
-      const parametric = new Mesh({ 
-        type: 'ParametricBufferGeometry', 
-        params: [ klein, 25, 25 ],
-        geoRotate: [0.4,0,-0.3],
-        position: [-50,0,0],
-        scale: [3,3,3],
-        material: snowShaderMat,
-        scene: this.scene,
-      });
-
-      const rock = new Mesh({ 
-        type: 'JSON',
-        url: './assets/models/rock.json',
-        position: [0,0,-50],
-        scale: [3,3,3],
-        material: snowShaderMat,
-        scene: this.scene,
       });
 
       const groundMaterial = new THREE.MeshPhongMaterial({
@@ -145,23 +88,71 @@ export default class Main {
         emissive: 0x000022,
       })
 
-      const ground = new Mesh({ 
-        type: 'PlaneBufferGeometry', 
-        params: [ 150, 150, 10, 10 ],
-        rotation: [-Math.PI/2, 0, 0],
-        position: [0,-20,0],
-        shadows: { receive: true, cast: false },
-        material: groundMaterial,
-        scene: this.scene,
-      });
+      const materials = { snowShaderMat, groundMaterial }
+      return this.createWorld(materials);
+    });
+  }
+
+  createWorld(materials) {
+
+    const sphere = new Mesh({ 
+      type: 'SphereBufferGeometry', 
+      params: [20,20,10], 
+      material: materials.snowShaderMat,
+      scene: this.scene,
+    });
+    
+    const box = new Mesh({ 
+      type: 'BoxBufferGeometry', 
+      params: [40,40,40], 
+      position: [-50, 0, -70],
+      material: materials.snowShaderMat,
+      scene: this.scene,
+    });
+
+    const torus = new Mesh({ 
+      type: 'TorusKnotBufferGeometry', 
+      params: [12, 6, 80, 16 ], 
+      position: [50,5,0],
+      material: materials.snowShaderMat,
+      scene: this.scene,
+    });
+
+    const parametric = new Mesh({ 
+      type: 'ParametricBufferGeometry', 
+      params: [ klein, 25, 25 ],
+      geoRotate: [0.4,0,-0.3],
+      position: [-50,0,0],
+      scale: [3,3,3],
+      material: materials.snowShaderMat,
+      scene: this.scene,
+    });
+
+    const rock = new Mesh({ 
+      type: 'JSON',
+      url: './assets/models/rock.json',
+      position: [0,0,-50],
+      scale: [3,3,3],
+      material: materials.snowShaderMat,
+      scene: this.scene,
+    });
+
+    const ground = new Mesh({ 
+      type: 'PlaneBufferGeometry', 
+      params: [ 150, 150, 10, 10 ],
+      rotation: [-Math.PI/2, 0, 0],
+      position: [0,-20,0],
+      shadows: { receive: true, cast: false },
+      material: materials.groundMaterial,
+      scene: this.scene,
+    });
 
 //////////////////---------------------------------
 
-      //this.snow = new Snow(this.scene);
+    //this.snow = new Snow(this.scene);
 
-      this.animate();
+    this.animate();
 
-    })
   }
     
   createStats() {
