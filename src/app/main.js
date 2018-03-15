@@ -11,7 +11,6 @@ import Controls from './components/controls';
 
 // Helpers
 import { promisifyLoader, klein } from './helpers/helpers';
-import Snow from './helpers/snow';
 import Mesh from './helpers/Mesh';
 
 // Materials
@@ -100,7 +99,10 @@ export default class Main {
       params: [20,20,10], 
       material: materials.snowShaderMat,
       scene: this.scene,
+      name: 'immasphere',
     });
+
+    console.log(sphere.getMesh())
     
     const box = new Mesh({ 
       type: 'BoxBufferGeometry', 
@@ -147,10 +149,7 @@ export default class Main {
       scene: this.scene,
     });
 
-//////////////////---------------------------------
-
-    //this.snow = new Snow(this.scene);
-
+    // finally: //
     this.animate();
 
   }
@@ -189,8 +188,6 @@ export default class Main {
     this.renderer.render(this.scene, this.camera.threeCamera);
     this.updateStatsEnd(rS)
     
-    if (this.snow) this.snow.update(delta);
-
     TWEEN.update();
     this.controls.threeControls.update();
 

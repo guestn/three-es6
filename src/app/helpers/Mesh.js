@@ -14,6 +14,7 @@ export default class Mesh {
     material,
     scene = this.scene,
     add = true,
+    name,
   }) {
     this.position = position;
     this.rotation = rotation;
@@ -23,6 +24,8 @@ export default class Mesh {
     this.material = material;
     this.scene = scene;
     this.addObjectToScene = add;
+    this.name = name;
+
     if (type === 'JSON') {
       this.initLoader(url);
     } else {
@@ -43,15 +46,22 @@ export default class Mesh {
       geometry.rotateY(this.geoRotate[1])
       geometry.rotateZ(this.geoRotate[2])
     }
-    const mesh = new THREE.Mesh( geometry, this.material );
-    mesh.position.set(...this.position);
-    mesh.rotation.set(...this.rotation);
-    mesh.scale.set(...this.scale);
-    mesh.castShadow = this.shadows.cast;
-    mesh.receiveShadow = this.shadows.receive;
+    this.mesh = new THREE.Mesh( geometry, this.material );
+    this.mesh.position.set(...this.position);
+    this.mesh.rotation.set(...this.rotation);
+    this.mesh.scale.set(...this.scale);
+    this.mesh.castShadow = this.shadows.cast;
+    this.mesh.receiveShadow = this.shadows.receive;
+    if (this.name) {
+      this.mesh.name = this.name;
+    }
 
     if (this.addObjectToScene) {
-      this.scene.add(mesh);
+      this.scene.add(this.mesh);
     }
+  }
+
+  getMesh() {
+    return this.mesh;
   }
 }
